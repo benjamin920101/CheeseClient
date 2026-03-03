@@ -1,0 +1,45 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package okio;
+
+import java.io.IOException;
+import okio.Buffer;
+import okio.Source;
+import okio.Timeout;
+
+public abstract class ForwardingSource
+implements Source {
+    private final Source delegate;
+
+    public ForwardingSource(Source delegate) {
+        if (delegate == null) {
+            throw new IllegalArgumentException("delegate == null");
+        }
+        this.delegate = delegate;
+    }
+
+    public final Source delegate() {
+        return this.delegate;
+    }
+
+    @Override
+    public long read(Buffer sink, long byteCount) throws IOException {
+        return this.delegate.read(sink, byteCount);
+    }
+
+    @Override
+    public Timeout timeout() {
+        return this.delegate.timeout();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.delegate.close();
+    }
+
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + this.delegate.toString() + ")";
+    }
+}
+

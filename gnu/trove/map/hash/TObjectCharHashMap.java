@@ -1,0 +1,902 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package gnu.trove.map.hash;
+
+import gnu.trove.TCharCollection;
+import gnu.trove.function.TCharFunction;
+import gnu.trove.impl.Constants;
+import gnu.trove.impl.HashFunctions;
+import gnu.trove.impl.hash.THash;
+import gnu.trove.impl.hash.TObjectHash;
+import gnu.trove.iterator.TCharIterator;
+import gnu.trove.iterator.TObjectCharIterator;
+import gnu.trove.iterator.hash.TObjectHashIterator;
+import gnu.trove.map.TObjectCharMap;
+import gnu.trove.procedure.TCharProcedure;
+import gnu.trove.procedure.TObjectCharProcedure;
+import gnu.trove.procedure.TObjectProcedure;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.lang.reflect.Array;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+/*
+ * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+ */
+public class TObjectCharHashMap<K>
+extends TObjectHash<K>
+implements TObjectCharMap<K>,
+Externalizable {
+    static final long serialVersionUID = 1L;
+    private final TObjectCharProcedure<K> PUT_ALL_PROC = new TObjectCharProcedure<K>(){
+
+        @Override
+        public boolean execute(K key, char value) {
+            TObjectCharHashMap.this.put(key, value);
+            return true;
+        }
+    };
+    protected transient char[] _values;
+    protected char no_entry_value;
+
+    public TObjectCharHashMap() {
+        this.no_entry_value = Constants.DEFAULT_CHAR_NO_ENTRY_VALUE;
+    }
+
+    public TObjectCharHashMap(int initialCapacity) {
+        super(initialCapacity);
+        this.no_entry_value = Constants.DEFAULT_CHAR_NO_ENTRY_VALUE;
+    }
+
+    public TObjectCharHashMap(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+        this.no_entry_value = Constants.DEFAULT_CHAR_NO_ENTRY_VALUE;
+    }
+
+    public TObjectCharHashMap(int initialCapacity, float loadFactor, char noEntryValue) {
+        super(initialCapacity, loadFactor);
+        this.no_entry_value = noEntryValue;
+        if (this.no_entry_value != '\u0000') {
+            Arrays.fill(this._values, this.no_entry_value);
+        }
+    }
+
+    public TObjectCharHashMap(TObjectCharMap<? extends K> map) {
+        this(map.size(), 0.5f, map.getNoEntryValue());
+        if (map instanceof TObjectCharHashMap) {
+            TObjectCharHashMap hashmap = (TObjectCharHashMap)map;
+            this._loadFactor = hashmap._loadFactor;
+            this.no_entry_value = hashmap.no_entry_value;
+            if (this.no_entry_value != '\u0000') {
+                Arrays.fill(this._values, this.no_entry_value);
+            }
+            this.setUp((int)Math.ceil(10.0f / this._loadFactor));
+        }
+        this.putAll(map);
+    }
+
+    @Override
+    public int setUp(int initialCapacity) {
+        int capacity = super.setUp(initialCapacity);
+        this._values = new char[capacity];
+        return capacity;
+    }
+
+    @Override
+    protected void rehash(int newCapacity) {
+        int oldCapacity = this._set.length;
+        Object[] oldKeys = this._set;
+        char[] oldVals = this._values;
+        this._set = new Object[newCapacity];
+        Arrays.fill(this._set, FREE);
+        this._values = new char[newCapacity];
+        Arrays.fill(this._values, this.no_entry_value);
+        int i2 = oldCapacity;
+        while (i2-- > 0) {
+            if (oldKeys[i2] == FREE || oldKeys[i2] == REMOVED) continue;
+            Object o2 = oldKeys[i2];
+            int index = this.insertKey(o2);
+            if (index < 0) {
+                this.throwObjectContractViolation(this._set[-index - 1], o2);
+            }
+            this._set[index] = o2;
+            this._values[index] = oldVals[i2];
+        }
+    }
+
+    @Override
+    public char getNoEntryValue() {
+        return this.no_entry_value;
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return this.contains(key);
+    }
+
+    @Override
+    public boolean containsValue(char val) {
+        Object[] keys = this._set;
+        char[] vals = this._values;
+        int i2 = vals.length;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED || val != vals[i2]) continue;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public char get(Object key) {
+        int index = this.index(key);
+        return index < 0 ? this.no_entry_value : this._values[index];
+    }
+
+    @Override
+    public char put(K key, char value) {
+        int index = this.insertKey(key);
+        return this.doPut(value, index);
+    }
+
+    @Override
+    public char putIfAbsent(K key, char value) {
+        int index = this.insertKey(key);
+        if (index < 0) {
+            return this._values[-index - 1];
+        }
+        return this.doPut(value, index);
+    }
+
+    private char doPut(char value, int index) {
+        char previous = this.no_entry_value;
+        boolean isNewMapping = true;
+        if (index < 0) {
+            index = -index - 1;
+            previous = this._values[index];
+            isNewMapping = false;
+        }
+        this._values[index] = value;
+        if (isNewMapping) {
+            this.postInsertHook(this.consumeFreeSlot);
+        }
+        return previous;
+    }
+
+    @Override
+    public char remove(Object key) {
+        char prev = this.no_entry_value;
+        int index = this.index(key);
+        if (index >= 0) {
+            prev = this._values[index];
+            this.removeAt(index);
+        }
+        return prev;
+    }
+
+    @Override
+    protected void removeAt(int index) {
+        this._values[index] = this.no_entry_value;
+        super.removeAt(index);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends Character> map) {
+        Set<Map.Entry<K, Character>> set = map.entrySet();
+        for (Map.Entry<K, Character> entry : set) {
+            this.put(entry.getKey(), entry.getValue().charValue());
+        }
+    }
+
+    @Override
+    public void putAll(TObjectCharMap<? extends K> map) {
+        map.forEachEntry(this.PUT_ALL_PROC);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        Arrays.fill(this._set, 0, this._set.length, FREE);
+        Arrays.fill(this._values, 0, this._values.length, this.no_entry_value);
+    }
+
+    @Override
+    public Set<K> keySet() {
+        return new KeyView();
+    }
+
+    @Override
+    public Object[] keys() {
+        Object[] keys = new Object[this.size()];
+        Object[] k2 = this._set;
+        int i2 = k2.length;
+        int j2 = 0;
+        while (i2-- > 0) {
+            if (k2[i2] == FREE || k2[i2] == REMOVED) continue;
+            keys[j2++] = k2[i2];
+        }
+        return keys;
+    }
+
+    @Override
+    public K[] keys(K[] a2) {
+        int size = this.size();
+        if (a2.length < size) {
+            a2 = (Object[])Array.newInstance(a2.getClass().getComponentType(), size);
+        }
+        Object[] k2 = this._set;
+        int i2 = k2.length;
+        int j2 = 0;
+        while (i2-- > 0) {
+            if (k2[i2] == FREE || k2[i2] == REMOVED) continue;
+            a2[j2++] = k2[i2];
+        }
+        return a2;
+    }
+
+    @Override
+    public TCharCollection valueCollection() {
+        return new TCharValueCollection();
+    }
+
+    @Override
+    public char[] values() {
+        char[] vals = new char[this.size()];
+        char[] v2 = this._values;
+        Object[] keys = this._set;
+        int i2 = v2.length;
+        int j2 = 0;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED) continue;
+            vals[j2++] = v2[i2];
+        }
+        return vals;
+    }
+
+    @Override
+    public char[] values(char[] array) {
+        int size = this.size();
+        if (array.length < size) {
+            array = new char[size];
+        }
+        char[] v2 = this._values;
+        Object[] keys = this._set;
+        int i2 = v2.length;
+        int j2 = 0;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED) continue;
+            array[j2++] = v2[i2];
+        }
+        if (array.length > size) {
+            array[size] = this.no_entry_value;
+        }
+        return array;
+    }
+
+    @Override
+    public TObjectCharIterator<K> iterator() {
+        return new TObjectCharHashIterator(this);
+    }
+
+    @Override
+    public boolean increment(K key) {
+        return this.adjustValue(key, '\u0001');
+    }
+
+    @Override
+    public boolean adjustValue(K key, char amount) {
+        int index = this.index(key);
+        if (index < 0) {
+            return false;
+        }
+        int n2 = index;
+        this._values[n2] = (char)(this._values[n2] + amount);
+        return true;
+    }
+
+    @Override
+    public char adjustOrPutValue(K key, char adjust_amount, char put_amount) {
+        boolean isNewMapping;
+        char newValue;
+        int index = this.insertKey(key);
+        if (index < 0) {
+            int n2 = index = -index - 1;
+            char c2 = (char)(this._values[n2] + adjust_amount);
+            this._values[n2] = c2;
+            newValue = c2;
+            isNewMapping = false;
+        } else {
+            newValue = this._values[index] = put_amount;
+            isNewMapping = true;
+        }
+        if (isNewMapping) {
+            this.postInsertHook(this.consumeFreeSlot);
+        }
+        return newValue;
+    }
+
+    @Override
+    public boolean forEachKey(TObjectProcedure<? super K> procedure) {
+        return this.forEach(procedure);
+    }
+
+    @Override
+    public boolean forEachValue(TCharProcedure procedure) {
+        Object[] keys = this._set;
+        char[] values = this._values;
+        int i2 = values.length;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED || procedure.execute(values[i2])) continue;
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean forEachEntry(TObjectCharProcedure<? super K> procedure) {
+        Object[] keys = this._set;
+        char[] values = this._values;
+        int i2 = keys.length;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED || procedure.execute(keys[i2], values[i2])) continue;
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    @Override
+    public boolean retainEntries(TObjectCharProcedure<? super K> procedure) {
+        boolean modified = false;
+        Object[] keys = this._set;
+        char[] values = this._values;
+        this.tempDisableAutoCompaction();
+        try {
+            int i2 = keys.length;
+            while (i2-- > 0) {
+                if (keys[i2] == FREE || keys[i2] == REMOVED || procedure.execute(keys[i2], values[i2])) continue;
+                this.removeAt(i2);
+                modified = true;
+            }
+        }
+        finally {
+            this.reenableAutoCompaction(true);
+        }
+        return modified;
+    }
+
+    @Override
+    public void transformValues(TCharFunction function) {
+        Object[] keys = this._set;
+        char[] values = this._values;
+        int i2 = values.length;
+        while (i2-- > 0) {
+            if (keys[i2] == null || keys[i2] == REMOVED) continue;
+            values[i2] = function.execute(values[i2]);
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof TObjectCharMap)) {
+            return false;
+        }
+        TObjectCharMap that = (TObjectCharMap)other;
+        if (that.size() != this.size()) {
+            return false;
+        }
+        try {
+            TObjectCharIterator<K> iter = this.iterator();
+            while (iter.hasNext()) {
+                iter.advance();
+                K key = iter.key();
+                char value = iter.value();
+                if (!(value == this.no_entry_value ? that.get(key) != that.getNoEntryValue() || !that.containsKey(key) : value != that.get(key))) continue;
+                return false;
+            }
+        }
+        catch (ClassCastException classCastException) {
+            // empty catch block
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hashcode = 0;
+        Object[] keys = this._set;
+        char[] values = this._values;
+        int i2 = values.length;
+        while (i2-- > 0) {
+            if (keys[i2] == FREE || keys[i2] == REMOVED) continue;
+            hashcode += HashFunctions.hash(values[i2]) ^ (keys[i2] == null ? 0 : keys[i2].hashCode());
+        }
+        return hashcode;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeByte(0);
+        super.writeExternal(out);
+        out.writeChar(this.no_entry_value);
+        out.writeInt(this._size);
+        int i2 = this._set.length;
+        while (i2-- > 0) {
+            if (this._set[i2] == REMOVED || this._set[i2] == FREE) continue;
+            out.writeObject(this._set[i2]);
+            out.writeChar(this._values[i2]);
+        }
+    }
+
+    @Override
+    public void readExternal(ObjectInput in2) throws IOException, ClassNotFoundException {
+        in2.readByte();
+        super.readExternal(in2);
+        this.no_entry_value = in2.readChar();
+        int size = in2.readInt();
+        this.setUp(size);
+        while (size-- > 0) {
+            Object key = in2.readObject();
+            char val = in2.readChar();
+            this.put(key, val);
+        }
+    }
+
+    public String toString() {
+        final StringBuilder buf = new StringBuilder("{");
+        this.forEachEntry(new TObjectCharProcedure<K>(){
+            private boolean first = true;
+
+            @Override
+            public boolean execute(K key, char value) {
+                if (this.first) {
+                    this.first = false;
+                } else {
+                    buf.append(",");
+                }
+                buf.append(key).append("=").append(value);
+                return true;
+            }
+        });
+        buf.append("}");
+        return buf.toString();
+    }
+
+    /*
+     * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+     */
+    class TObjectCharHashIterator<K>
+    extends TObjectHashIterator<K>
+    implements TObjectCharIterator<K> {
+        private final TObjectCharHashMap<K> _map;
+
+        public TObjectCharHashIterator(TObjectCharHashMap<K> map) {
+            super(map);
+            this._map = map;
+        }
+
+        @Override
+        public void advance() {
+            this.moveToNextIndex();
+        }
+
+        @Override
+        public K key() {
+            return (K)this._map._set[this._index];
+        }
+
+        @Override
+        public char value() {
+            return this._map._values[this._index];
+        }
+
+        @Override
+        public char setValue(char val) {
+            char old = this.value();
+            this._map._values[this._index] = val;
+            return old;
+        }
+    }
+
+    /*
+     * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+     */
+    class TCharValueCollection
+    implements TCharCollection {
+        TCharValueCollection() {
+        }
+
+        @Override
+        public TCharIterator iterator() {
+            return new TObjectCharValueHashIterator();
+        }
+
+        @Override
+        public char getNoEntryValue() {
+            return TObjectCharHashMap.this.no_entry_value;
+        }
+
+        @Override
+        public int size() {
+            return TObjectCharHashMap.this._size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return 0 == TObjectCharHashMap.this._size;
+        }
+
+        @Override
+        public boolean contains(char entry) {
+            return TObjectCharHashMap.this.containsValue(entry);
+        }
+
+        @Override
+        public char[] toArray() {
+            return TObjectCharHashMap.this.values();
+        }
+
+        @Override
+        public char[] toArray(char[] dest) {
+            return TObjectCharHashMap.this.values(dest);
+        }
+
+        @Override
+        public boolean add(char entry) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean remove(char entry) {
+            char[] values = TObjectCharHashMap.this._values;
+            Object[] set = TObjectCharHashMap.this._set;
+            int i2 = values.length;
+            while (i2-- > 0) {
+                if (set[i2] == TObjectHash.FREE || set[i2] == TObjectHash.REMOVED || entry != values[i2]) continue;
+                TObjectCharHashMap.this.removeAt(i2);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> collection) {
+            for (Object element : collection) {
+                if (element instanceof Character) {
+                    char ele = ((Character)element).charValue();
+                    if (TObjectCharHashMap.this.containsValue(ele)) continue;
+                    return false;
+                }
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean containsAll(TCharCollection collection) {
+            TCharIterator iter = collection.iterator();
+            while (iter.hasNext()) {
+                if (TObjectCharHashMap.this.containsValue(iter.next())) continue;
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean containsAll(char[] array) {
+            for (char element : array) {
+                if (TObjectCharHashMap.this.containsValue(element)) continue;
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends Character> collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(TCharCollection collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(char[] array) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            boolean modified = false;
+            TCharIterator iter = this.iterator();
+            while (iter.hasNext()) {
+                if (collection.contains(Character.valueOf(iter.next()))) continue;
+                iter.remove();
+                modified = true;
+            }
+            return modified;
+        }
+
+        @Override
+        public boolean retainAll(TCharCollection collection) {
+            if (this == collection) {
+                return false;
+            }
+            boolean modified = false;
+            TCharIterator iter = this.iterator();
+            while (iter.hasNext()) {
+                if (collection.contains(iter.next())) continue;
+                iter.remove();
+                modified = true;
+            }
+            return modified;
+        }
+
+        @Override
+        public boolean retainAll(char[] array) {
+            boolean changed = false;
+            Arrays.sort(array);
+            char[] values = TObjectCharHashMap.this._values;
+            Object[] set = TObjectCharHashMap.this._set;
+            int i2 = set.length;
+            while (i2-- > 0) {
+                if (set[i2] == TObjectHash.FREE || set[i2] == TObjectHash.REMOVED || Arrays.binarySearch(array, values[i2]) >= 0) continue;
+                TObjectCharHashMap.this.removeAt(i2);
+                changed = true;
+            }
+            return changed;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> collection) {
+            boolean changed = false;
+            for (Object element : collection) {
+                char c2;
+                if (!(element instanceof Character) || !this.remove(c2 = ((Character)element).charValue())) continue;
+                changed = true;
+            }
+            return changed;
+        }
+
+        @Override
+        public boolean removeAll(TCharCollection collection) {
+            if (this == collection) {
+                this.clear();
+                return true;
+            }
+            boolean changed = false;
+            TCharIterator iter = collection.iterator();
+            while (iter.hasNext()) {
+                char element = iter.next();
+                if (!this.remove(element)) continue;
+                changed = true;
+            }
+            return changed;
+        }
+
+        @Override
+        public boolean removeAll(char[] array) {
+            boolean changed = false;
+            int i2 = array.length;
+            while (i2-- > 0) {
+                if (!this.remove(array[i2])) continue;
+                changed = true;
+            }
+            return changed;
+        }
+
+        @Override
+        public void clear() {
+            TObjectCharHashMap.this.clear();
+        }
+
+        @Override
+        public boolean forEach(TCharProcedure procedure) {
+            return TObjectCharHashMap.this.forEachValue(procedure);
+        }
+
+        public String toString() {
+            final StringBuilder buf = new StringBuilder("{");
+            TObjectCharHashMap.this.forEachValue(new TCharProcedure(){
+                private boolean first = true;
+
+                public boolean execute(char value) {
+                    if (this.first) {
+                        this.first = false;
+                    } else {
+                        buf.append(", ");
+                    }
+                    buf.append(value);
+                    return true;
+                }
+            });
+            buf.append("}");
+            return buf.toString();
+        }
+
+        class TObjectCharValueHashIterator
+        implements TCharIterator {
+            protected THash _hash;
+            protected int _expectedSize;
+            protected int _index;
+
+            TObjectCharValueHashIterator() {
+                this._hash = TObjectCharHashMap.this;
+                this._expectedSize = this._hash.size();
+                this._index = this._hash.capacity();
+            }
+
+            public boolean hasNext() {
+                return this.nextIndex() >= 0;
+            }
+
+            public char next() {
+                this.moveToNextIndex();
+                return TObjectCharHashMap.this._values[this._index];
+            }
+
+            /*
+             * WARNING - Removed try catching itself - possible behaviour change.
+             */
+            public void remove() {
+                if (this._expectedSize != this._hash.size()) {
+                    throw new ConcurrentModificationException();
+                }
+                try {
+                    this._hash.tempDisableAutoCompaction();
+                    TObjectCharHashMap.this.removeAt(this._index);
+                }
+                finally {
+                    this._hash.reenableAutoCompaction(false);
+                }
+                --this._expectedSize;
+            }
+
+            protected final void moveToNextIndex() {
+                this._index = this.nextIndex();
+                if (this._index < 0) {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            protected final int nextIndex() {
+                if (this._expectedSize != this._hash.size()) {
+                    throw new ConcurrentModificationException();
+                }
+                Object[] set = TObjectCharHashMap.this._set;
+                int i2 = this._index;
+                while (i2-- > 0 && (set[i2] == TObjectHash.FREE || set[i2] == TObjectHash.REMOVED)) {
+                }
+                return i2;
+            }
+        }
+    }
+
+    /*
+     * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+     */
+    private abstract class MapBackedView<E>
+    extends AbstractSet<E>
+    implements Set<E>,
+    Iterable<E> {
+        private MapBackedView() {
+        }
+
+        public abstract boolean removeElement(E var1);
+
+        public abstract boolean containsElement(E var1);
+
+        @Override
+        public boolean contains(Object key) {
+            return this.containsElement(key);
+        }
+
+        @Override
+        public boolean remove(Object o2) {
+            return this.removeElement(o2);
+        }
+
+        @Override
+        public void clear() {
+            TObjectCharHashMap.this.clear();
+        }
+
+        @Override
+        public boolean add(E obj) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int size() {
+            return TObjectCharHashMap.this.size();
+        }
+
+        @Override
+        public Object[] toArray() {
+            Object[] result = new Object[this.size()];
+            Iterator e2 = this.iterator();
+            int i2 = 0;
+            while (e2.hasNext()) {
+                result[i2] = e2.next();
+                ++i2;
+            }
+            return result;
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a2) {
+            int size = this.size();
+            if (a2.length < size) {
+                a2 = (Object[])Array.newInstance(a2.getClass().getComponentType(), size);
+            }
+            Iterator it2 = this.iterator();
+            T[] result = a2;
+            for (int i2 = 0; i2 < size; ++i2) {
+                result[i2] = it2.next();
+            }
+            if (a2.length > size) {
+                a2[size] = null;
+            }
+            return a2;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return TObjectCharHashMap.this.isEmpty();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends E> collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            boolean changed = false;
+            Iterator i2 = this.iterator();
+            while (i2.hasNext()) {
+                if (collection.contains(i2.next())) continue;
+                i2.remove();
+                changed = true;
+            }
+            return changed;
+        }
+    }
+
+    /*
+     * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+     */
+    protected class KeyView
+    extends MapBackedView<K> {
+        protected KeyView() {
+        }
+
+        @Override
+        public Iterator<K> iterator() {
+            return new TObjectHashIterator(TObjectCharHashMap.this);
+        }
+
+        @Override
+        public boolean removeElement(K key) {
+            return TObjectCharHashMap.this.no_entry_value != TObjectCharHashMap.this.remove(key);
+        }
+
+        @Override
+        public boolean containsElement(K key) {
+            return TObjectCharHashMap.this.contains(key);
+        }
+    }
+}
+

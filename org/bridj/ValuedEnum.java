@@ -1,0 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package org.bridj;
+
+/*
+ * This class specifies class file version 49.0 but uses Java 6 signatures.  Assumed Java 6.
+ */
+public interface ValuedEnum<E extends Enum<E>>
+extends Iterable<E> {
+    public long value();
+}
+

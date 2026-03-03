@@ -1,0 +1,403 @@
+Summary for ./CheeseClient.jar
+Decompiled with CFR 0.152
+
+
+net.minecraft.block.state.BlockPistonStructureHelper
+----------------------------
+
+func_177251_a(net.minecraft.util.BlockPos )
+  Unable to fully structure code
+
+
+net.minecraft.client.Minecraft
+----------------------------
+
+run()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Started 2 blocks at once
+runTick()
+  Unable to fully structure code
+
+
+net.minecraft.client.gui.GuiTextField
+----------------------------
+
+func_146197_a(int int boolean )
+  Unable to fully structure code
+
+
+net.minecraft.command.CommandFill
+----------------------------
+
+processCommand(net.minecraft.command.ICommandSender java.lang.String[] )
+  Unable to fully structure code
+
+
+net.minecraft.command.server.CommandScoreboard
+----------------------------
+
+joinTeam(net.minecraft.command.ICommandSender java.lang.String[] int )
+  Unable to fully structure code
+leaveTeam(net.minecraft.command.ICommandSender java.lang.String[] int )
+  Unable to fully structure code
+
+
+net.minecraft.entity.item.EntityArmorStand
+----------------------------
+
+interactAt(net.minecraft.entity.player.EntityPlayer net.minecraft.util.Vec3 )
+  Unable to fully structure code
+
+
+net.minecraft.item.crafting.CraftingManager
+----------------------------
+
+addRecipe(net.minecraft.item.ItemStack java.lang.Object[] )
+  Unable to fully structure code
+
+
+net.minecraft.server.MinecraftServer
+----------------------------
+
+run()
+  Unable to fully structure code
+
+
+net.minecraft.server.management.PlayerProfileCache
+----------------------------
+
+load()
+  Iterators could be improved
+  Loose catch block
+save()
+  Loose catch block
+
+
+net.minecraft.tileentity.TileEntityBeacon
+----------------------------
+
+updateSegmentColors()
+  Unable to fully structure code
+
+
+net.minecraft.util.Cartesian
+----------------------------
+
+next()
+  Unable to fully structure code
+
+
+net.minecraft.util.HttpUtil
+----------------------------
+
+run()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [1[TRYBLOCK]], but top level block is 10[WHILELOOP]
+
+
+net.optifine.CustomColors
+----------------------------
+
+readSpawnEggColors(java.util.Properties java.lang.String java.lang.String java.lang.String )
+  Unable to fully structure code
+
+
+net.optifine.player.PlayerItemParser
+----------------------------
+
+parseItemModel(com.google.gson.JsonObject )
+  Unable to fully structure code
+
+
+net.optifine.shaders.config.MacroProcessor
+----------------------------
+
+getMacroHeader(java.lang.String )
+  Unable to fully structure code
+
+
+net.optifine.shaders.config.MacroExpressionResolver
+----------------------------
+
+getExpression(java.lang.String )
+  Unable to fully structure code
+
+
+bpz
+----------------------------
+
+a(jy bph )
+  Loose catch block
+
+
+lt
+----------------------------
+
+b()
+  Iterators could be improved
+  Loose catch block
+c()
+  Loose catch block
+
+
+nj
+----------------------------
+
+run()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [1[TRYBLOCK]], but top level block is 10[WHILELOOP]
+
+
+um
+----------------------------
+
+a(wn aui )
+  Unable to fully structure code
+
+
+com.ibm.icu.text.DecimalFormat
+----------------------------
+
+expandAffix(java.lang.String java.lang.String java.lang.StringBuffer boolean )
+  Unable to fully structure code
+applyPatternWithoutExpandAffix(java.lang.String boolean )
+  Unable to fully structure code
+
+
+com.ibm.icu.text.UnicodeSet
+----------------------------
+
+applyPropertyAlias(java.lang.String java.lang.String com.ibm.icu.text.SymbolTable )
+  Unable to fully structure code
+
+
+com.jcraft.jorbis.Drft
+----------------------------
+
+dradfg(int int int int float[] float[] float[] float[] float[] float[] int )
+  Unable to fully structure code
+dradbg(int int int int float[] float[] float[] float[] float[] float[] int )
+  Unable to fully structure code
+
+
+paulscode.sound.codecs.CodecJOrbis
+----------------------------
+
+readBytes()
+  Unable to fully structure code
+
+
+io.netty.handler.codec.MessageToMessageEncoder
+----------------------------
+
+write(io.netty.channel.ChannelHandlerContext java.lang.Object io.netty.channel.ChannelPromise )
+  Loose catch block
+
+
+io.netty.handler.codec.compression.SnappyFramedDecoder
+----------------------------
+
+decode(io.netty.channel.ChannelHandlerContext io.netty.buffer.ByteBuf java.util.List<java.lang.Object> )
+  Unable to fully structure code
+
+
+io.netty.handler.codec.ByteToMessageDecoder
+----------------------------
+
+channelRead(io.netty.channel.ChannelHandlerContext java.lang.Object )
+  Loose catch block
+
+
+io.netty.channel.epoll.EpollDatagramChannel
+----------------------------
+
+epollInReady()
+  Unable to fully structure code
+
+
+io.netty.util.concurrent.DefaultPromise
+----------------------------
+
+await0(long boolean )
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [0[TRYBLOCK]], but top level block is 10[MONITOR]
+
+
+io.netty.util.NetUtil
+----------------------------
+
+<clinit>()
+  Unable to fully structure code
+
+
+io.netty.util.internal.ThreadLocalRandom
+----------------------------
+
+getInitialSeedUniquifier()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [2[DOLOOP]], but top level block is 0[TRYBLOCK]
+
+
+io.netty.util.internal.chmv8.ForkJoinPool
+----------------------------
+
+tryHelpStealer(io.netty.util.internal.chmv8.ForkJoinPool$WorkQueue io.netty.util.internal.chmv8.ForkJoinTask<?> )
+  Unable to fully structure code
+tryTerminate(boolean boolean )
+  Unable to fully structure code
+
+
+com.google.common.util.concurrent.Futures
+----------------------------
+
+setOneValue(int java.util.concurrent.Future<? extends V> )
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Started 2 blocks at once
+run()
+  Loose catch block
+
+
+com.google.common.util.concurrent.Monitor
+----------------------------
+
+enterWhenUninterruptibly(com.google.common.util.concurrent.Monitor$Guard long java.util.concurrent.TimeUnit )
+  Loose catch block
+
+
+org.apache.commons.lang3.text.ExtendedMessageFormat
+----------------------------
+
+readArgumentIndex(java.lang.String java.text.ParsePosition )
+  Unable to fully structure code
+
+
+org.apache.commons.io.filefilter.MagicNumberFileFilter
+----------------------------
+
+accept(java.io.File )
+  Loose catch block
+
+
+com.mojang.realmsclient.gui.screens.RealmsUploadScreen
+----------------------------
+
+run()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [2[TRYBLOCK]], but top level block is 47[FORLOOP]
+
+
+org.apache.commons.compress.archivers.ArchiveStreamFactory
+----------------------------
+
+createArchiveInputStream(java.io.InputStream )
+  Loose catch block
+
+
+org.apache.commons.compress.compressors.bzip2.BlockSort
+----------------------------
+
+fallbackSort(int[] byte[] int )
+  Unable to fully structure code
+
+
+org.apache.logging.log4j.core.config.plugins.ResolverUtil
+----------------------------
+
+loadImplementationsInJar(org.apache.logging.log4j.core.config.plugins.ResolverUtil$Test java.lang.String java.io.File )
+  Loose catch block
+
+
+org.apache.logging.log4j.core.net.ssl.TrustStoreConfiguration
+----------------------------
+
+load()
+  Loose catch block
+
+
+org.lwjgl.opengl.LinuxCanvasImplementation
+----------------------------
+
+findVisualIDFromFormat(int org.lwjgl.opengl.PixelFormat )
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Started 2 blocks at once
+
+
+org.lwjgl.opengl.LinuxDisplay
+----------------------------
+
+getGammaRampLength()
+  Loose catch block
+
+
+com.github.sarxos.webcam.WebcamStreamer
+----------------------------
+
+run()
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [3[TRYBLOCK]], but top level block is 48[DOLOOP]
+
+
+org.bridj.relocated.org.objectweb.asm.ClassReader
+----------------------------
+
+accept(org.bridj.relocated.org.objectweb.asm.ClassVisitor org.bridj.relocated.org.objectweb.asm.Attribute[] int )
+  Unable to fully structure code
+  Could not resolve type clashes
+
+
+net.dv8tion.jda.api.utils.WidgetUtil
+----------------------------
+
+getWidget(long )
+  Unable to fully structure code
+
+
+com.fasterxml.jackson.databind.deser.std.BaseNodeDeserializer
+----------------------------
+
+updateObject(com.fasterxml.jackson.core.JsonParser com.fasterxml.jackson.databind.DeserializationContext com.fasterxml.jackson.databind.node.ObjectNode )
+  Unable to fully structure code
+  Could not resolve type clashes
+
+
+com.fasterxml.jackson.databind.type.TypeFactory
+----------------------------
+
+constructSpecializedType(com.fasterxml.jackson.databind.JavaType java.lang.Class<?> )
+  Unable to fully structure code
+
+
+okio.InflaterSource
+----------------------------
+
+read(okio.Buffer long )
+  Exception : org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [2[DOLOOP]], but top level block is 0[TRYBLOCK]
+
+
+com.fasterxml.jackson.core.io.UTF8Writer
+----------------------------
+
+write(char[] int int )
+  Unable to fully structure code
+write(java.lang.String int int )
+  Unable to fully structure code
+
+
+jaco.mp3.player.j
+----------------------------
+
+a(int )
+  Unable to fully structure code
+
+
+jaco.mp3.player.h
+----------------------------
+
+a(jaco.mp3.player.h )
+  Unable to fully structure code
+  Could not resolve type clashes
+
+
+jaco.mp3.player.M
+----------------------------
+
+a(jaco.mp3.player.H jaco.mp3.player.r[] )
+  Unable to fully structure code
+
+
+jaco.mp3.player.o
+----------------------------
+
+a(jaco.mp3.player.o int[] int[] int[] int[] jaco.mp3.player.j )
+  Unable to fully structure code
